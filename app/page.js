@@ -1,101 +1,76 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.js
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [audioFile, setAudioFile] = useState(null);
+  const [chunkSize, setChunkSize] = useState(5);
+  const [finalTranscriptionResults, setFinalTranscriptionResults] =
+    useState("");
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+  function handleAudioFileChange(e) {
+    const selectedAudioFile = e.target.files[0];
+    setAudioFile(selectedAudioFile);
+    console.log("Audio file selected", selectedAudioFile);
+  }
+
+  function hancleChunkSizeChange(e) {
+    const size = Number(e.target.value);
+    setChunkSize(size);
+    console.log(`Audio will be processed in ${size} chunks.`);
+  }
+
+  function handleStartTransciption() {
+    if (!audioFile) {
+      alert("You have not selected any audio file!");
+      return;
+    }
+
+    console.log("Transcription has started for the following audio:");
+    console.log("File Name:", audioFile.name);
+    console.log("Chunk Size:", chunkSize);
+
+    // Temp note
+    setFinalTranscriptionResults("Chill MAHOL!");
+  }
+
+  return (
+    <div>
+      <h1>Urdu Audio Transcription System</h1>
+      <p>Upload an audio file to get started</p>
+
+      {/* Audio File Select */}
+      <input type="file" accept="audio/*" onChange={handleAudioFileChange} />
+
+      {audioFile && <p>Selected Audio File: {audioFile.name}</p>}
+
+      {/* Input for user to select chunk size (in minutes) */}
+      <div>
+        <label>Chunk size (minutes): </label>
+        <input
+          type="number"
+          min="1"
+          max="30"
+          value={chunkSize}
+          onChange={hancleChunkSizeChange}
+        />
+      </div>
+
+      {/* Button to start transcription process */}
+      <div>
+        <button onClick={handleStartTransciption}>Start Transcription</button>
+      </div>
+
+      {/* Textarea to show the final transcription results */}
+      <div>
+        <h3>Final Transcription Results:</h3>
+        <textarea
+          rows={20}
+          cols={100}
+          value={finalTranscriptionResults}
+          placeholder="Transcription will appear here..."
+        />
+      </div>
     </div>
   );
 }
