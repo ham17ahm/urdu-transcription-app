@@ -26,6 +26,23 @@ export default function Home() {
       return;
     }
 
+    async function getTranscriptionResults() {
+      const url = "/api/testing";
+      try {
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`Response status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log(result);
+      } catch (error) {
+        console.error(error.message);
+      }
+    }
+
+    getTranscriptionResults();
+
     console.log("Transcription has started for the following audio:");
     console.log("File Name:", audioFile.name);
     console.log("Chunk Size:", chunkSize);
@@ -62,7 +79,7 @@ export default function Home() {
       </div>
 
       {/* Textarea to show the final transcription results */}
-      <div>
+      {/* <div>
         <h3>Final Transcription Results:</h3>
         <textarea
           rows={20}
@@ -70,7 +87,7 @@ export default function Home() {
           value={finalTranscriptionResults}
           placeholder="Transcription will appear here..."
         />
-      </div>
+      </div> */}
     </div>
   );
 }
