@@ -3,7 +3,7 @@ import { transcribeWithGemini } from "@/app/lib/transcription/gemini";
 export async function POST(request) {
   try {
     // Get the data sent from the frontend
-    const formData = await request.formDaata();
+    const formData = await request.formData();
 
     // Extract the audio file
     const audioFile = formData.get("audioFile");
@@ -17,7 +17,7 @@ export async function POST(request) {
     console.log("Chunk size:", chunkSize, "minutes");
 
     // Receiving transcription from gemini helper function
-    const geminiResults = transcribeWithGemini("test", 1);
+    const geminiResults = await transcribeWithGemini("test", 1);
 
     console.log(geminiResults);
 

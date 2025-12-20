@@ -27,7 +27,15 @@ export default function Home() {
     }
 
     async function getTranscriptionResults() {
-      const url = "/api/testing";
+      const url = "/api/transcribe";
+
+      // Create object to send form data
+      const formData = new FormData();
+
+      // Adding new fields to formData
+      formData.append("chunkSize", chunkSize);
+      formData.append();
+
       try {
         const response = await fetch(url);
         if (!response.ok) {
