@@ -27,6 +27,7 @@ export async function POST(request) {
       message: "Audio file received successfully!",
       fileName: audioFile.name,
       fileSize: audioFile.size,
+      transcription: geminiResults.text,
     });
   } catch (error) {
     console.log("Error in the API route:", error);

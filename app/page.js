@@ -14,10 +14,15 @@ export default function Home() {
     console.log("Audio file selected", selectedAudioFile);
   }
 
-  function hancleChunkSizeChange(e) {
+  function handleChunkSizeChange(e) {
     const size = Number(e.target.value);
     setChunkSize(size);
     console.log(`Audio will be processed in ${size} chunks.`);
+  }
+
+  function handleTextareaChange(e) {
+    const newText = e.target.value;
+    setFinalTranscriptionResults(newText);
   }
 
   function handleStartTransciption() {
@@ -33,42 +38,38 @@ export default function Home() {
       const formData = new FormData();
 
       // Adding new fields to formData
+      formData.append("audioFile", audioFile);
       formData.append("chunkSize", chunkSize);
-      formData.append();
 
       try {
-        const response = await fetch(url);
+        const response = await fetch(url, {
+          method: "POST",
+          body: formData,
+        });
+
         if (!response.ok) {
           throw new Error(`Response status: ${response.status}`);
         }
 
         const result = await response.json();
         console.log(result);
+        setFinalTranscriptionResults(result.transcription);
       } catch (error) {
         console.error(error.message);
       }
     }
 
+    // Run the function
     getTranscriptionResults();
-
-    console.log("Transcription has started for the following audio:");
-    console.log("File Name:", audioFile.name);
-    console.log("Chunk Size:", chunkSize);
-
-    // Temp note
-    setFinalTranscriptionResults("Chill MAHOL!");
   }
 
   return (
     <div>
       <h1>Urdu Audio Transcription System</h1>
       <p>Upload an audio file to get started</p>
-
       {/* Audio File Select */}
       <input type="file" accept="audio/*" onChange={handleAudioFileChange} />
-
       {audioFile && <p>Selected Audio File: {audioFile.name}</p>}
-
       {/* Input for user to select chunk size (in minutes) */}
       <div>
         <label>Chunk size (minutes): </label>
@@ -77,25 +78,25 @@ export default function Home() {
           min="1"
           max="30"
           value={chunkSize}
-          onChange={hancleChunkSizeChange}
+          onChange={handleChunkSizeChange}
         />
       </div>
-
       {/* Button to start transcription process */}
       <div>
         <button onClick={handleStartTransciption}>Start Transcription</button>
       </div>
 
       {/* Textarea to show the final transcription results */}
-      {/* <div>
+      <div>
         <h3>Final Transcription Results:</h3>
         <textarea
           rows={20}
           cols={100}
           value={finalTranscriptionResults}
+          onChange={handleTextareaChange}
           placeholder="Transcription will appear here..."
         />
-      </div> */}
+      </div>
     </div>
   );
 }
