@@ -3,10 +3,13 @@
 import { useState } from "react";
 
 export default function Home() {
+  // Declaring states
   const [audioFile, setAudioFile] = useState(null);
   const [chunkSize, setChunkSize] = useState(5);
   const [finalTranscriptionResults, setFinalTranscriptionResults] =
     useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   function handleAudioFileChange(e) {
     const selectedAudioFile = e.target.files[0];
@@ -41,21 +44,33 @@ export default function Home() {
       formData.append("audioFile", audioFile);
       formData.append("chunkSize", chunkSize);
 
+      // Set loading state to true and clear any error states
+      setIsLoading(true);
+      setError(null);
+
       try {
         const response = await fetch(url, {
           method: "POST",
           body: formData,
         });
 
+        const result = await response.json();
+
         if (!response.ok) {
-          throw new Error(`Response status: ${response.status}`);
+          // Use the backend's error message if available
+          throw new Error(
+            result.message || `Response status: ${response.status}`
+          );
         }
 
-        const result = await response.json();
-        console.log(result);
         setFinalTranscriptionResults(result.transcription);
       } catch (error) {
         console.error(error.message);
+        // Show error to user if any
+        setError(`Error: ${error.message}`);
+      } finally {
+        // Stop loading in either case: success or error
+        setIsLoading(false);
       }
     }
 
@@ -83,8 +98,19 @@ export default function Home() {
       </div>
       {/* Button to start transcription process */}
       <div>
-        <button onClick={handleStartTransciption}>Start Transcription</button>
+        {isLoading ? (
+          <button onClick={handleStartTransciption} disabled={isLoading}>
+            Processing... Please wait
+          </button>
+        ) : (
+          <button onClick={handleStartTransciption}>Start Transcription</button>
+        )}
       </div>
+
+      {/* Add Error Display */}
+      {error && (
+        <div style={{ color: "red", marginBottom: "10px" }}>{error}</div>
+      )}
 
       {/* Textarea to show the final transcription results */}
       <div>
