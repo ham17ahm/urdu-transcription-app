@@ -3,6 +3,8 @@ import { transcribeWithElevenlabs } from "@/app/lib/transcription/elevenlabs";
 import { transcribeWithOpenAI } from "@/app/lib/transcription/openai";
 import { transcribeWithChirp } from "@/app/lib/transcription/chirp";
 
+import { splitAudioIntoChunks } from "@/app/lib/audio/chunker";
+
 export async function POST(request) {
   try {
     // Get the data sent from the frontend
@@ -18,6 +20,8 @@ export async function POST(request) {
     console.log("File size:", audioFile.size, "bytes");
     console.log("File type:", audioFile.type);
     console.log("Chunk size:", chunkSize, "minutes");
+
+    console.log(await splitAudioIntoChunks(audioFile, chunkSize));
 
     // Start all 4 transcriptions at the same time
     const results = await Promise.allSettled([
