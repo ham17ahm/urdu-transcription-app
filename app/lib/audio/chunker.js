@@ -40,5 +40,46 @@ export async function splitAudioIntoChunks(audioFile, chunkSizeMinutes) {
   // Save the audio file
   await fs.writeFile(filePath, nodeBuffer);
 
+  // Get ffmpeg info of audio file
+  let ffmpegInfo;
+  try {
+    ffmpegInfo = await execPromise(`${ffmpeg} -i ${filePath} -f null NUL`);
+    console.log(ffmpegInfo);
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+
+  // Get the duration of the audio
+  const audioDuration = ffmpegInfo["stderr"].match(
+    /Duration:\s(\d{2}:\d{2}:\d{2}\.\d{2})/
+  );
+
+  // Check to see if audio duration is actually in the FFmpeg output
+  if (!audioDuration) {
+    throw new Error("Could not find duration in FFmpeg output");
+  }
+  console.log(audioDuration[1]);
+
+  // Convert total duration to seconds
+  // Get hours, minutes and seconds seperately
+  const hours = Number(audioDuration[1].substring(0, 2));
+  const minutes = Number(audioDuration[1].substring(3, 5));
+  const seconds = Number(audioDuration[1].substring(6, 8));
+  console.log(hours, minutes, seconds);
+
+  // Get the total seconds
+  const totalAudioDurationinSeconds = hours * 3600 + minutes * 60 + seconds;
+  console.log(totalAudioDurationinSeconds);
+
+  // Convert chunk size minutes to seconds
+  const chunkSizeInSeconds = chunkSizeMinutes * 60;
+  console.log(chunkSizeInSeconds);
+
+  // Calculate the number of chunks needed
+  const numberOfChunksNeeded = Math.ceil(
+    totalAudioDurationinSeconds / chunkSizeInSeconds
+  );
+  console.log(numberOfChunksNeeded);
   return filePath;
 }
