@@ -81,5 +81,44 @@ export async function splitAudioIntoChunks(audioFile, chunkSizeMinutes) {
     totalAudioDurationinSeconds / chunkSizeInSeconds
   );
   console.log(numberOfChunksNeeded);
-  return filePath;
+
+  // Create an output pattern
+  const outputPattern = path.join(tmpFolderPath, "chunk_%03d.mp3");
+  console.log(outputPattern);
+
+  // Create a split command for FFmpeg
+  const splitCommand = `${ffmpeg} -i ${filePath} -c copy -f segment -segment_time ${chunkSizeInSeconds} ${outputPattern}`;
+  console.log(splitCommand);
+
+  // Run the split command
+  let ffmpegSplitResults;
+  try {
+    ffmpegSplitResults = await execPromise(splitCommand);
+    console.log(ffmpegSplitResults);
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+
+  // Create an array of the file paths of all chunks
+  let filePathsArrayOfChunks = [];
+  let chunkFilePath = "";
+
+  for (let index = 0; index < numberOfChunksNeeded; index++) {
+    const paddedIndex = String(index).padStart(3, "0");
+    chunkFilePath = path.join(tmpFolderPath, `chunk_${paddedIndex}.mp3`);
+    filePathsArrayOfChunks.push(chunkFilePath);
+  }
+
+  console.log(filePathsArrayOfChunks);
+
+  // Creating array of chunk buffers
+  let chunkBuffers = [];
+
+  for (let index = 0; index < filePathsArrayOfChunks.length; index++) {
+    const element = filePathsArrayOfChunks[index];
+    console.log(element);
+  }
+
+  return filePathsArrayOfChunks;
 }
