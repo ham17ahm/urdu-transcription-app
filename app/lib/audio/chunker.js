@@ -44,7 +44,7 @@ export async function splitAudioIntoChunks(audioFile, chunkSizeMinutes) {
   let ffmpegInfo;
   try {
     ffmpegInfo = await execPromise(`${ffmpeg} -i ${filePath} -f null NUL`);
-    console.log(ffmpegInfo);
+    // console.log(ffmpegInfo);
   } catch (error) {
     console.log(error);
     throw error;
@@ -52,7 +52,7 @@ export async function splitAudioIntoChunks(audioFile, chunkSizeMinutes) {
 
   // Get the duration of the audio
   const audioDuration = ffmpegInfo["stderr"].match(
-    /Duration:\s(\d{2}:\d{2}:\d{2}\.\d{2})/
+    /Duration:\s(\d{2}:\d{2}:\d{2}\.\d{2})/,
   );
 
   // Check to see if audio duration is actually in the FFmpeg output
@@ -78,7 +78,7 @@ export async function splitAudioIntoChunks(audioFile, chunkSizeMinutes) {
 
   // Calculate the number of chunks needed
   const numberOfChunksNeeded = Math.ceil(
-    totalAudioDurationinSeconds / chunkSizeInSeconds
+    totalAudioDurationinSeconds / chunkSizeInSeconds,
   );
   console.log(numberOfChunksNeeded);
 
@@ -94,7 +94,7 @@ export async function splitAudioIntoChunks(audioFile, chunkSizeMinutes) {
   let ffmpegSplitResults;
   try {
     ffmpegSplitResults = await execPromise(splitCommand);
-    console.log(ffmpegSplitResults);
+    // console.log(ffmpegSplitResults);
   } catch (error) {
     console.log(error);
     throw error;
@@ -110,15 +110,20 @@ export async function splitAudioIntoChunks(audioFile, chunkSizeMinutes) {
     filePathsArrayOfChunks.push(chunkFilePath);
   }
 
-  console.log(filePathsArrayOfChunks);
+  // console.log(filePathsArrayOfChunks);
 
   // Creating array of chunk buffers
   let chunkBuffers = [];
+  let chunk;
 
   for (let index = 0; index < filePathsArrayOfChunks.length; index++) {
     const element = filePathsArrayOfChunks[index];
-    console.log(element);
+    console.log("ELEMENT: ", element);
+    chunk = await fs.readFile(element);
+    chunkBuffers.push(chunk);
   }
 
-  return filePathsArrayOfChunks;
+  // console.log(chunkBuffers);
+
+  return chunkBuffers;
 }

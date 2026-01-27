@@ -21,35 +21,48 @@ export async function POST(request) {
     console.log("File type:", audioFile.type);
     console.log("Chunk size:", chunkSize, "minutes");
 
-    console.log(await splitAudioIntoChunks(audioFile, chunkSize));
+    // Store result of splitAudioIntoChunks() (chunker.js) into a variable
 
-    // Start all 4 transcriptions at the same time
-    const results = await Promise.allSettled([
-      transcribeWithGemini("test", 1),
-      transcribeWithElevenlabs("test", 1),
-      transcribeWithOpenAI("test", 1),
-      transcribeWithChirp("test", 1),
-    ]);
+    const chunks = await splitAudioIntoChunks(audioFile, chunkSize);
 
-    // Extract actual values from the the transcription results
-    const geminiResults =
-      results[0].status === "fulfilled" ? results[0].value : results[0].reason;
-    const elevenlabsResults =
-      results[1].status === "fulfilled" ? results[1].value : results[1].reason;
-    const openAIResults =
-      results[2].status === "fulfilled" ? results[2].value : results[2].reason;
-    const chirpResults =
-      results[3].status === "fulfilled" ? results[3].value : results[3].reason;
+    // Create an empty array to store ALL results
+    let allChunkResults = [];
 
-    // // TEMPORARY: Testing error handling
-    // throw new Error("Testing error display!");
+    // Loop through each chunk, process it with all four services, and append the results to allChunkResults
 
-    // Log all results to see what we got
-    console.log("=== Transcription Results ===");
-    console.log("Gemini:", geminiResults);
-    console.log("ElevenLabs:", elevenlabsResults);
-    console.log("OpenAI:", openAIResults);
-    console.log("Chirp:", chirpResults);
+    for (let i = 0; i < chunks.length; i++) {
+      // Start all 4 transcriptions at the same time
+      const tempChunkResults = await Promise.allSettled([
+        transcribeWithGemini(chunks[i], i),
+        transcribeWithElevenlabs(chunks[i], i),
+        transcribeWithOpenAI(chunks[i], i),
+        transcribeWithChirp(chunks[i], i),
+      ]);
+
+      // Push each result into array
+      allChunkResults.push(tempChunkResults);
+    }
+
+    console.log(allChunkResults);
+
+    console.log("=== DETAILED STRUCTURE ===");
+    console.log("allChunkResults[0] is:", allChunkResults[0]);
+    console.log("allChunkResults[0][0] is:", allChunkResults[0][0]);
+    console.log("allChunkResults[0][0].value is:", allChunkResults[0][0].value);
+
+    // Build a simple combined transcription
+    let combinedText = "";
+
+    for (let i = 0; i < allChunkResults.length; i++) {
+      combinedText += `\n=== CHUNK ${i} ===\n`;
+      combinedText += `Gemini: ${allChunkResults[i][0].value.text}\n`;
+      combinedText += `ElevenLabs: ${allChunkResults[i][1].value.text}\n`;
+      combinedText += `OpenAI: ${allChunkResults[i][2].value.text}\n`;
+      combinedText += `Chirp: ${allChunkResults[i][3].value.text}\n`;
+    }
+
+    console.log("=== COMBINED TEXT ===");
+    console.log(combinedText);
 
     // Send response to the frontend
     return Response.json({
@@ -57,19 +70,7 @@ export async function POST(request) {
       message: "Audio file received successfully!",
       fileName: audioFile.name,
       fileSize: audioFile.size,
-      transcription: `
-=== GEMINI ===
-${geminiResults.text}
-
-=== ELEVENLABS ===
-${elevenlabsResults.text}
-
-=== OPENAI ===
-${openAIResults.text}
-
-=== CHIRP ===
-${chirpResults.text}
-`.trim(),
+      transcription: combinedText,
     });
   } catch (error) {
     console.log("Error in the API route:", error);
@@ -78,7 +79,7 @@ ${chirpResults.text}
         success: false,
         message: error.message || "Something went wrong!",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
