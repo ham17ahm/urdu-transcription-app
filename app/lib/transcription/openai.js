@@ -1,6 +1,11 @@
 // This is a HELPER FUNCTION that will handle OpenAI transcription
-// For now, it's a MOCK (fake) version - later we'll add the real API
 // We'll use OpenAI's audio transcription model (as per: https://platform.openai.com/docs/guides/speech-to-text)
+
+// Imports
+import OpenAI from "openai";
+
+// Initiate OpenAI instance and read API key
+const openAi = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 /**
  * Transcribes an audio chunk using OpenAI
@@ -12,21 +17,27 @@ export async function transcribeWithOpenAI(audioChunk, chunkIndex) {
   try {
     console.log(`[OpenAI] Starting transcription for chunk ${chunkIndex}...`);
 
-    // Simulate API call delay (real APIs take time!)
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    // Convert buffer to file
+    const fileObject = new File([audioChunk], "chunk.mp3", {
+      type: "audio/mp3",
+    });
 
-    // MOCK RESPONSE - This is fake data for now
-    const mockTranscription = {
-      service: "OpenAI",
-      chunkIndex: chunkIndex,
-      text: `[OPENAI MOCK] یہ ایک ٹیسٹ ہے (This is a test) - Chunk ${chunkIndex}`,
-      confidence: 0.94,
-      success: true,
-    };
+    // Make OpenAi API request
+    const transcription = await openAi.audio.transcriptions.create({
+      file: fileObject,
+      model: "gpt-4o-transcribe",
+      language: "ur",
+    });
 
     console.log(`[OpenAI] ✅ Completed chunk ${chunkIndex}`);
+    console.log(transcription.text);
 
-    return mockTranscription;
+    return {
+      service: "OpenAI",
+      chunkIndex: chunkIndex,
+      text: transcription.text,
+      success: true,
+    };
   } catch (error) {
     console.error(`[OpenAI] ❌ Error on chunk ${chunkIndex}:`, error);
 
@@ -34,7 +45,6 @@ export async function transcribeWithOpenAI(audioChunk, chunkIndex) {
       service: "OpenAI",
       chunkIndex: chunkIndex,
       text: "",
-      confidence: 0,
       success: false,
       error: error.message,
     };
