@@ -17,7 +17,7 @@ export async function transcribeWithOpenAI(audioChunk, chunkIndex) {
   try {
     console.log(`[OpenAI] Starting transcription for chunk ${chunkIndex}...`);
 
-    // Convert buffer to file
+    // Convert buffer to file object
     const fileObject = new File([audioChunk], "chunk.mp3", {
       type: "audio/mp3",
     });
